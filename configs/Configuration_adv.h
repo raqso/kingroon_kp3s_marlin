@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2023 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -830,6 +830,7 @@
 #define X1_MAX_POS X_BED_SIZE  // A max coordinate so the X1 carriage can't hit the parked X2 carriage
 #define X2_MIN_POS 80          // A min coordinate so the X2 carriage can't hit the parked X1 carriage
 #define X2_MAX_POS 353         // The max position of the X2 carriage, typically also the home position
+#define X2_HOME_DIR 1          // Set to 1. The X2 carriage always homes to the max endstop position
 #define X2_HOME_POS X2_MAX_POS // Default X2 home position. Set to X2_MAX_POS.
                                // NOTE: For Dual X Carriage use M218 T1 Xn to override the X2_HOME_POS.
                                // This allows recalibration of endstops distance without a rebuild.
@@ -871,7 +872,7 @@
 // #define INVERT_X2_VS_X_DIR        // X2 direction signal is the opposite of X
 // #define X_DUAL_ENDSTOPS           // X2 has its own endstop
 #if ENABLED(X_DUAL_ENDSTOPS)
-// #define X2_STOP_PIN X_MAX_PIN   // X2 endstop pin override
+#define X2_USE_ENDSTOP _XMAX_   // X2 endstop board plug. Don't forget to enable USE_*_PLUG.
 #define X2_ENDSTOP_ADJUSTMENT 0 // X2 offset relative to X endstop
 #endif
 #endif
@@ -880,7 +881,7 @@
 // #define INVERT_Y2_VS_Y_DIR        // Y2 direction signal is the opposite of Y
 // #define Y_DUAL_ENDSTOPS           // Y2 has its own endstop
 #if ENABLED(Y_DUAL_ENDSTOPS)
-// #define Y2_STOP_PIN Y_MAX_PIN   // Y2 endstop pin override
+#define Y2_USE_ENDSTOP _YMAX_   // Y2 endstop board plug. Don't forget to enable USE_*_PLUG.
 #define Y2_ENDSTOP_ADJUSTMENT 0 // Y2 offset relative to Y endstop
 #endif
 #endif
@@ -893,21 +894,21 @@
 
 // #define Z_MULTI_ENDSTOPS          // Other Z axes have their own endstops
 #if ENABLED(Z_MULTI_ENDSTOPS)
-// #define Z2_STOP_PIN X_MAX_PIN   // Z2 endstop pin override
-#define Z2_ENDSTOP_ADJUSTMENT 0 // Z2 offset relative to Z endstop
+#define Z2_USE_ENDSTOP _XMAX_   // Z2 endstop board plug. Don't forget to enable USE_*_PLUG.
+#define Z2_ENDSTOP_ADJUSTMENT 0 // Z2 offset relative to Y endstop
 #endif
 #ifdef Z3_DRIVER_TYPE
 // #define INVERT_Z3_VS_Z_DIR      // Z3 direction signal is the opposite of Z
 #if ENABLED(Z_MULTI_ENDSTOPS)
-// #define Z3_STOP_PIN Y_MAX_PIN // Z3 endstop pin override
-#define Z3_ENDSTOP_ADJUSTMENT 0 // Z3 offset relative to Z endstop
+#define Z3_USE_ENDSTOP _YMAX_   // Z3 endstop board plug. Don't forget to enable USE_*_PLUG.
+#define Z3_ENDSTOP_ADJUSTMENT 0 // Z3 offset relative to Y endstop
 #endif
 #endif
 #ifdef Z4_DRIVER_TYPE
 // #define INVERT_Z4_VS_Z_DIR      // Z4 direction signal is the opposite of Z
 #if ENABLED(Z_MULTI_ENDSTOPS)
-// #define Z4_STOP_PIN Z_MAX_PIN // Z4 endstop pin override
-#define Z4_ENDSTOP_ADJUSTMENT 0 // Z4 offset relative to Z endstop
+#define Z4_USE_ENDSTOP _ZMAX_   // Z4 endstop board plug. Don't forget to enable USE_*_PLUG.
+#define Z4_ENDSTOP_ADJUSTMENT 0 // Z4 offset relative to Y endstop
 #endif
 #endif
 #endif
@@ -948,7 +949,7 @@
 
 // #define QUICK_HOME                          // If G28 contains XY do a diagonal move first
 // #define HOME_Y_BEFORE_X                     // If G28 contains XY home Y before X
-// #define HOME_Z_FIRST                        // Home Z first. Requires a real endstop (not a probe).
+// #define HOME_Z_FIRST                        // Home Z first. Requires a Z-MIN endstop (not a probe).
 // #define CODEPENDENT_XY_HOMING               // If X/Y can't home without homing Y/X first
 
 // @section bltouch
@@ -1115,7 +1116,7 @@
 #define RESTORE_LEVELING_AFTER_G35 // Enable to restore leveling setup after operation
 // #define REPORT_TRAMMING_MM          // Report Z deviation (mm) for each point relative to the first
 
-// #define ASSISTED_TRAMMING_WIZARD    // Add a Tramming Wizard to the LCD menu
+#define ASSISTED_TRAMMING_WIZARD // Add a Tramming Wizard to the LCD menu // GR un wizard sul menu
 
 // #define ASSISTED_TRAMMING_WAIT_POSITION { X_CENTER, Y_CENTER, 30 } // Move the nozzle out of the way for adjustment
 
@@ -1535,7 +1536,7 @@
 #endif
 
 #if HAS_BED_PROBE && ANY(HAS_MARLINUI_MENU, HAS_TFT_LVGL_UI)
-// #define PROBE_OFFSET_WIZARD       // Add a Probe Z Offset calibration option to the LCD menu
+#define PROBE_OFFSET_WIZARD // Add a Probe Z Offset calibration option to the LCD menu
 #if ENABLED(PROBE_OFFSET_WIZARD)
 /**
  * Enable to init the Probe Z-Offset when starting the Wizard.
@@ -3926,6 +3927,38 @@
  * Currently only supports a single cycle, no G-code chaining.
  */
 // #define CNC_DRILLING_CYCLE
+
+// @section reporting
+
+/**
+ * Auto-report fan speed with M123 S<seconds>
+ * Requires fans with tachometer pins
+ */
+// #define AUTO_REPORT_FANS
+
+/**
+ * Auto-report temperatures with M155 S<seconds>
+ */
+#define AUTO_REPORT_TEMPERATURES
+#if ENABLED(AUTO_REPORT_TEMPERATURES) && TEMP_SENSOR_REDUNDANT
+// #define AUTO_REPORT_REDUNDANT // Include the "R" sensor in the auto-report
+#endif
+
+/**
+ * Auto-report position with M154 S<seconds>
+ */
+// #define AUTO_REPORT_POSITION
+#if ENABLED(AUTO_REPORT_POSITION)
+// #define AUTO_REPORT_REAL_POSITION // Auto-report the real position
+#endif
+
+/**
+ * Include capabilities in M115 output
+ */
+#define EXTENDED_CAPABILITIES_REPORT
+#if ENABLED(EXTENDED_CAPABILITIES_REPORT)
+// #define M115_GEOMETRY_REPORT
+#endif
 
 // @section security
 

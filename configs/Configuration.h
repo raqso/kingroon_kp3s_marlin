@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2021 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2023 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -39,6 +39,27 @@
  */
 #define CONFIGURATION_H_VERSION 02010300
 
+/**
+ * enable the BL-Touch feature when a BL-Touch is installed
+ * on a KP3S-Pro or KP3S-Pro S1 using the instructions provided
+ * by Kingroon on their blog and youtube
+ * https://kingroon.com/blogs/downloads/kingroon-kp3s-bltouch-installation
+ * https://www.youtube.com/watch?v=s2ZiibBKVKI
+ * un-comment USE_BLTOUCH if a BL-Touch is installed on your printer.
+ */
+#define USE_BLTOUCH
+
+/**
+ * after the BL-Touch is installed the offset between the probe and nozzle
+ * should be measured, actual values will vary from printer to printer and
+ * probe mount used, Z_PROBE_OFFSET is intentionally high to prevent the
+ * nozzle from crashing into the build surface. These values can be changed
+ * in the Marlin UI so ballpark values are fine.
+ */
+#define X_PROBE_OFFSET 26
+#define Y_PROBE_OFFSET 5
+#define Z_PROBE_OFFSET -0.80
+
 //===========================================================================
 //============================= Getting Started =============================
 //===========================================================================
@@ -63,7 +84,7 @@
 // @section info
 
 // Author info of this build printed to the host during boot and M115
-#define STRING_CONFIG_H_AUTHOR "(kubik369)" // Who made the changes.
+#define STRING_CONFIG_H_AUTHOR "Raqs" // Who made the changes.
 // #define CUSTOM_VERSION_FILE Version.h // Path from the root directory (no quotes)
 
 // @section machine
@@ -94,7 +115,7 @@
  *
  * :[2400, 9600, 19200, 38400, 57600, 115200, 250000, 500000, 1000000]
  */
-#define BAUDRATE 250000
+#define BAUDRATE 115200
 
 // #define BAUD_RATE_GCODE     // Enable G-code M575 to set the baud rate
 
@@ -150,9 +171,9 @@
  *          TMC5130, TMC5130_STANDALONE, TMC5160, TMC5160_STANDALONE
  * :['A4988', 'A5984', 'DRV8825', 'LV8729', 'TB6560', 'TB6600', 'TMC2100', 'TMC2130', 'TMC2130_STANDALONE', 'TMC2160', 'TMC2160_STANDALONE', 'TMC2208', 'TMC2208_STANDALONE', 'TMC2209', 'TMC2209_STANDALONE', 'TMC26X', 'TMC26X_STANDALONE', 'TMC2660', 'TMC2660_STANDALONE', 'TMC5130', 'TMC5130_STANDALONE', 'TMC5160', 'TMC5160_STANDALONE']
  */
-#define X_DRIVER_TYPE A4988
-#define Y_DRIVER_TYPE A4988
-#define Z_DRIVER_TYPE A4988
+#define X_DRIVER_TYPE TMC2208_STANDALONE
+#define Y_DRIVER_TYPE TMC2208_STANDALONE
+#define Z_DRIVER_TYPE TMC2208_STANDALONE
 // #define X2_DRIVER_TYPE A4988
 // #define Y2_DRIVER_TYPE A4988
 // #define Z2_DRIVER_TYPE A4988
@@ -164,7 +185,7 @@
 // #define U_DRIVER_TYPE  A4988
 // #define V_DRIVER_TYPE  A4988
 // #define W_DRIVER_TYPE  A4988
-#define E0_DRIVER_TYPE A4988
+#define E0_DRIVER_TYPE TMC2208_STANDALONE
 // #define E1_DRIVER_TYPE A4988
 // #define E2_DRIVER_TYPE A4988
 // #define E3_DRIVER_TYPE A4988
@@ -1434,7 +1455,7 @@
  * The probe replaces the Z-MIN endstop and is used for Z homing.
  * (Automatically enables USE_PROBE_FOR_Z_HOMING.)
  */
-#define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
+// #define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
 
 // Force the use of the probe for Z-axis homing
 // #define USE_PROBE_FOR_Z_HOMING
@@ -1442,17 +1463,20 @@
 /**
  * Z_MIN_PROBE_PIN
  *
- * Override this pin only if the probe cannot be connected to
- * the default Z_MIN_PROBE_PIN for the selected MOTHERBOARD.
+ * Define this pin if the probe is not connected to Z_MIN_PIN.
+ * If not defined the default pin for the selected MOTHERBOARD
+ * will be used. Most of the time the default is what you want.
  *
  *  - The simplest option is to use a free endstop connector.
  *  - Use 5V for powered (usually inductive) sensors.
  *
- *  - For simple switches...
- *    - Normally-closed (NC) also connect to GND.
- *    - Normally-open (NO) also connect to 5V.
+ *  - RAMPS 1.3/1.4 boards may use the 5V, GND, and Aux4->D32 pin:
+ *    - For simple switches connect...
+ *      - normally-closed switches to GND and D32.
+ *      - normally-open switches to 5V and D32.
  */
-// #define Z_MIN_PROBE_PIN -1
+// #define Z_MIN_PROBE_PIN 32 // Pin 32 is the RAMPS default
+#define Z_MIN_PROBE_PIN PC4
 
 /**
  * Probe Type
@@ -1494,7 +1518,9 @@
 /**
  * The BLTouch probe uses a Hall effect sensor and emulates a servo.
  */
-// #define BLTOUCH
+#ifdef USE_BLTOUCH
+#define BLTOUCH
+#endif
 
 /**
  * MagLev V4 probe by MDD
@@ -1709,9 +1735,9 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET \
-  {                            \
-    30.0, -1.0, -2.605         \
+#define NOZZLE_TO_PROBE_OFFSET                     \
+  {                                                \
+    X_PROBE_OFFSET, Y_PROBE_OFFSET, Z_PROBE_OFFSET \
   }
 
 // Enable and set to use a specific tool for probing. Disable to allow any tool.
@@ -1840,8 +1866,8 @@
 // Require minimum nozzle and/or bed temperature for probing
 // #define PREHEAT_BEFORE_PROBING
 #if ENABLED(PREHEAT_BEFORE_PROBING)
-#define PROBING_NOZZLE_TEMP 120 // (°C) Only applies to E0 at this time
-#define PROBING_BED_TEMP 50
+#define PROBING_NOZZLE_TEMP 210 // (°C) Only applies to E0 at this time // was 120
+#define PROBING_BED_TEMP 60     // was 50
 #endif
 
 // For Inverting Stepper Enable Pins (Active Low) use 0, Non Inverting (Active High) use 1
@@ -1859,15 +1885,15 @@
 
 // Disable axis steppers immediately when they're not being stepped.
 // WARNING: When motors turn off there is a chance of losing position accuracy!
-// #define DISABLE_X
-// #define DISABLE_Y
-// #define DISABLE_Z
-// #define DISABLE_I
-// #define DISABLE_J
-// #define DISABLE_K
-// #define DISABLE_U
-// #define DISABLE_V
-// #define DISABLE_W
+#define DISABLE_X false
+#define DISABLE_Y false
+#define DISABLE_Z false
+// #define DISABLE_I false
+// #define DISABLE_J false
+// #define DISABLE_K false
+// #define DISABLE_U false
+// #define DISABLE_V false
+// #define DISABLE_W false
 
 // Turn off the display blinking that warns about possible accuracy reduction
 // #define DISABLE_REDUCED_ACCURACY_WARNING
@@ -1952,12 +1978,12 @@
 // @section geometry
 
 // The size of the printable area
-#define X_BED_SIZE 165
-#define Y_BED_SIZE 170
+#define X_BED_SIZE 180
+#define Y_BED_SIZE 180
 
 // Travel limits (linear=mm, rotational=°) after homing, corresponding to endstop positions.
-#define X_MIN_POS -10
-#define Y_MIN_POS -7
+#define X_MIN_POS -3
+#define Y_MIN_POS 0
 #define Z_MIN_POS 0
 #define X_MAX_POS X_BED_SIZE
 #define Y_MAX_POS Y_BED_SIZE
@@ -2172,9 +2198,12 @@
  */
 // #define AUTO_BED_LEVELING_3POINT
 // #define AUTO_BED_LEVELING_LINEAR
-// #define AUTO_BED_LEVELING_BILINEAR
-// #define AUTO_BED_LEVELING_UBL
+#ifdef USE_BLTOUCH
+#define AUTO_BED_LEVELING_BILINEAR
+#else
 #define MESH_BED_LEVELING
+#endif
+// #define AUTO_BED_LEVELING_UBL
 
 /**
  * Commands to execute at the end of G29 probing.
@@ -2193,10 +2222,10 @@
 /**
  * Auto-leveling needs preheating
  */
-#define PREHEAT_BEFORE_LEVELING
+// #define PREHEAT_BEFORE_LEVELING
 #if ENABLED(PREHEAT_BEFORE_LEVELING)
-#define LEVELING_NOZZLE_TEMP 120 // (°C) Only applies to E0 at this time
-#define LEVELING_BED_TEMP 50
+#define LEVELING_NOZZLE_TEMP 210 // (°C) Only applies to E0 at this time  // was 120
+#define LEVELING_BED_TEMP 60     // was 50
 #endif
 
 /**
@@ -2255,7 +2284,7 @@
 #if ANY(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR)
 
 // Set the number of grid points per dimension.
-#define GRID_MAX_POINTS_X 3
+#define GRID_MAX_POINTS_X 4
 #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
 // Probe along the Y axis, advancing X after each column
@@ -2342,7 +2371,7 @@
 //===========================================================================
 
 #define MESH_INSET 10       // Set Mesh bounds as an inset region of the bed
-#define GRID_MAX_POINTS_X 3 // Don't use more than 7 points per axis, implementation limited.
+#define GRID_MAX_POINTS_X 4 // Don't use more than 7 points per axis, implementation limited. // GR 4 punti di calibrazione manuale
 #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
 // #define MESH_G28_REST_ORIGIN // After homing all axes ('G28' or 'G28 XYZ') rest Z at Z_MIN_POS
@@ -2358,7 +2387,7 @@
 #if ENABLED(LCD_BED_LEVELING)
 #define MESH_EDIT_Z_STEP 0.025 // (mm) Step size while manually probing Z axis.
 #define LCD_PROBE_Z_RANGE 4    // (mm) Z Range centered on Z_MIN_POS for LCD Z adjustment
-// #define MESH_EDIT_MENU        // Add a menu to edit mesh points
+#define MESH_EDIT_MENU         // Add a menu to edit mesh points
 #endif
 
 // Add a menu item to move between bed corners for manual bed adjustment
@@ -2372,7 +2401,7 @@
 #define BED_TRAMMING_HEIGHT 0.0     // (mm) Z height of nozzle at tramming points
 #define BED_TRAMMING_Z_HOP 4.0      // (mm) Z height of nozzle between tramming points
 #define BED_TRAMMING_INCLUDE_CENTER // Move to the center after the last corner
-// #define BED_TRAMMING_USE_PROBE
+#define BED_TRAMMING_USE_PROBE      // GR usa BLTouch per il tramming
 #if ENABLED(BED_TRAMMING_USE_PROBE)
 #define BED_TRAMMING_PROBE_TOLERANCE 0.1 // (mm)
 #define BED_TRAMMING_VERIFY_RAISED       // After adjustment triggers the probe, re-probe to verify
@@ -2426,7 +2455,9 @@
  * - Allows Z homing only when XY positions are known and trusted.
  * - If stepper drivers sleep, XY homing may be required again before Z homing.
  */
-// #define Z_SAFE_HOMING
+#ifdef USE_BLTOUCH
+#define Z_SAFE_HOMING
+#endif
 
 #if ENABLED(Z_SAFE_HOMING)
 // NOTE(g.melikov): bed position is irrelevant for MESH_BED_LEVELING,
@@ -2525,7 +2556,7 @@
 #define EEPROM_BOOT_SILENT // Keep M503 quiet and only give errors during first load
 #if ENABLED(EEPROM_SETTINGS)
 // #define EEPROM_AUTO_INIT  // Init EEPROM automatically on any errors.
-// #define EEPROM_INIT_NOW   // Init EEPROM on first boot after a new build.
+#define EEPROM_INIT_NOW // Init EEPROM on first boot after a new build.
 #endif
 
 // @section host
