@@ -3572,7 +3572,7 @@
  *   TFT_ROTATE_270, TFT_ROTATE_270_MIRROR_X, TFT_ROTATE_270_MIRROR_Y,
  *   TFT_MIRROR_X, TFT_MIRROR_Y, TFT_NO_ROTATION
  */
-#define TFT_ROTATION TFT_ROTATE_180
+#define TFT_ROTATION TFT_ROTATE_270
 
 //=============================================================================
 //============================  Other Controllers  ============================
@@ -3600,11 +3600,11 @@
 
 #define TOUCH_SCREEN_CALIBRATION
 
-#define TOUCH_CALIBRATION_X -11758
-#define TOUCH_CALIBRATION_Y 8553
-#define TOUCH_OFFSET_X 353
-#define TOUCH_OFFSET_Y -16
-#define TOUCH_ORIENTATION TOUCH_LANDSCAPE
+// #define TOUCH_CALIBRATION_X -11758  // GR must ask for calibration
+// #define TOUCH_CALIBRATION_Y 8553    // GR must ask for calibration
+// #define TOUCH_OFFSET_X        353   // GR must ask for calibration
+// #define TOUCH_OFFSET_Y        -16   // GR must ask for calibration
+// #define TOUCH_ORIENTATION TOUCH_LANDSCAPE // GR must ask for calibration
 
 #if ALL(TOUCH_SCREEN_CALIBRATION, EEPROM_SETTINGS)
 #define TOUCH_CALIBRATION_AUTO_SAVE // Auto save successful calibration values to EEPROM
