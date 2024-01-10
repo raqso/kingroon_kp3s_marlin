@@ -56,9 +56,9 @@
  * nozzle from crashing into the build surface. These values can be changed
  * in the Marlin UI so ballpark values are fine.
  */
-#define X_PROBE_OFFSET 26
-#define Y_PROBE_OFFSET 5
-#define Z_PROBE_OFFSET -0.80
+#define X_PROBE_OFFSET 29
+#define Y_PROBE_OFFSET 3.5
+#define Z_PROBE_OFFSET -3.5
 
 //===========================================================================
 //============================= Getting Started =============================
@@ -1982,11 +1982,11 @@
 #define Y_BED_SIZE 180
 
 // Travel limits (linear=mm, rotational=°) after homing, corresponding to endstop positions.
-#define X_MIN_POS -3
+#define X_MIN_POS -4
 #define Y_MIN_POS 0
 #define Z_MIN_POS 0
-#define X_MAX_POS X_BED_SIZE
-#define Y_MAX_POS Y_BED_SIZE
+#define X_MAX_POS X_BED_SIZE - X_MIN_POS
+#define Y_MAX_POS Y_BED_SIZE - Y_MIN_POS
 #define Z_MAX_POS 180
 // #define I_MIN_POS 0
 // #define I_MAX_POS 50
