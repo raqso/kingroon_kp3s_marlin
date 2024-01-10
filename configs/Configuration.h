@@ -56,9 +56,9 @@
  * nozzle from crashing into the build surface. These values can be changed
  * in the Marlin UI so ballpark values are fine.
  */
-#define X_PROBE_OFFSET 29
-#define Y_PROBE_OFFSET 3.5
-#define Z_PROBE_OFFSET -3.5
+#define X_PROBE_OFFSET -30
+#define Y_PROBE_OFFSET 9
+#define Z_PROBE_OFFSET -0.88
 
 //===========================================================================
 //============================= Getting Started =============================
