@@ -771,20 +771,20 @@
 // Measured physical constants from M306
 #define MPC_BLOCK_HEAT_CAPACITY \
   {                             \
-    16.7f                       \
+    13.54f                       \
   } // (J/K) Heat block heat capacities.
 #define MPC_SENSOR_RESPONSIVENESS \
   {                               \
-    0.22f                         \
+    0.4851f                         \
   } // (K/s per ∆K) Rate of change of sensor temperature from heat block.
 #define MPC_AMBIENT_XFER_COEFF \
   {                            \
-    0.068f                     \
+    0.0768f                     \
   } // (W/K) Heat transfer coefficients from heat block to room air with fan off.
 #if ENABLED(MPC_INCLUDE_FAN)
 #define MPC_AMBIENT_XFER_COEFF_FAN255 \
   {                                   \
-    0.097f                            \
+    0.091f                            \
   } // (W/K) Heat transfer coefficients from heat block to room air with fan on full.
 #endif
 
